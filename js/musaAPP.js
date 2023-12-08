@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then(data => displayArtistInfo(data.artist));
 
             //hae artistin Top albumit artist.gettopalbums APIlla
-            fetch(`https://ws.audioscrobbler.com/2.0/?method=artist.gettopalbums&artist=${selectedArtist}&api_key=${apiKey}&format=json`)
+            fetch(`https://ws.audioscrobbler.com/2.0/?method=artist.gettopalbums&artist=${selectedArtist}&api_key=${apiKey}&format=json&limit=10`)
                 .then(response => response.json())
                 .then(data => displayTopAlbums(data.topalbums.album));
         } else {
