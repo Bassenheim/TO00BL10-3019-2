@@ -1,11 +1,11 @@
 document.addEventListener("DOMContentLoaded", function () {
     //AJAX pyyntö TheatreAreas APIin
-    var theatreRequest = new XMLHttpRequest();
-    theatreRequest.open("GET", "https://www.finnkino.fi/xml/TheatreAreas/", true);
+    var teatteriHaku = new XMLHttpRequest();
+    teatteriHaku.open("GET", "https://www.finnkino.fi/xml/TheatreAreas/", true);
 
-    theatreRequest.onreadystatechange = function () {
-        if (theatreRequest.readyState == 4 && theatreRequest.status == 200) {
-            var theatreAreas = theatreRequest.responseXML.querySelectorAll("TheatreArea");
+    teatteriHaku.onreadystatechange = function () {
+        if (teatteriHaku.readyState == 4 && teatteriHaku.status == 200) {
+            var theatreAreas = teatteriHaku.responseXML.querySelectorAll("TheatreArea");
 
             var teatteriValinta = document.getElementById("teatteriValinta");
             teatteriValinta.innerHTML = "<option value=''>Select a theater</option>";
@@ -20,9 +20,9 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             teatteriValinta.addEventListener("change", function () {
-                var selectedTheaterId = this.value;
-                if (selectedTheaterId) {
-                    fetchAndDisplayMovieSchedule(selectedTheaterId);
+                var valittuTeatteri = this.value;
+                if (valittuTeatteri) {
+                    listaaTeatteriElokuvat(valittuTeatteri);
                 } else {
                     document.getElementById("leffaAPP").innerHTML = "";
                 }
@@ -30,16 +30,16 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     };
 
-    theatreRequest.send();
+    teatteriHaku.send();
 
-    function fetchAndDisplayMovieSchedule(theaterId) {
+    function listaaTeatteriElokuvat(teatteriID) {
         //AJAX pyyntö Schedule APIin valitulle teatterille
-        var scheduleRequest = new XMLHttpRequest();
-        scheduleRequest.open("GET", "https://www.finnkino.fi/xml/Schedule/?area=" + theaterId, true);
+        var schedulePyynto = new XMLHttpRequest();
+        schedulePyynto.open("GET", "https://www.finnkino.fi/xml/Schedule/?area=" + teatteriID, true);
 
-        scheduleRequest.onreadystatechange = function () {
-            if (scheduleRequest.readyState == 4 && scheduleRequest.status == 200) {
-                var shows = scheduleRequest.responseXML.querySelectorAll("Show");
+        schedulePyynto.onreadystatechange = function () {
+            if (schedulePyynto.readyState == 4 && schedulePyynto.status == 200) {
+                var shows = schedulePyynto.responseXML.querySelectorAll("Show");
 
                 document.getElementById("leffaAPP").innerHTML = "";
 
@@ -51,9 +51,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     var imageUrl = show.querySelector("EventSmallImagePortrait").textContent;
 
                     //listataan elokuvat tietoineen
-                    var movieInfoDiv = document.createElement("div");
-                    movieInfoDiv.classList.add("movie-info");
-                    movieInfoDiv.innerHTML = `
+                    var leffaInfoDiv = document.createElement("div");
+                    leffaInfoDiv.classList.add("leffaInfo");
+                    leffaInfoDiv.innerHTML = `
                         <img src="${imageUrl}" alt="${title}" class="movie-image">
                         <p><strong>Title:</strong> ${title}</p>
                         <p><strong>Auditorium:</strong> ${auditorium}</p>
@@ -61,11 +61,11 @@ document.addEventListener("DOMContentLoaded", function () {
                         <p><strong>Show End:</strong> ${showEnd}</p>
                         <hr>
                     `;
-                    document.getElementById("leffaAPP").appendChild(movieInfoDiv);
+                    document.getElementById("leffaAPP").appendChild(leffaInfoDiv);
                 });
             }
         };
 
-        scheduleRequest.send();
+        schedulePyynto.send();
     }
 });
