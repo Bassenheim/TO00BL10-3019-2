@@ -1,70 +1,90 @@
 document.addEventListener("DOMContentLoaded", function () {
-    
-    const leffaAppContainer = document.getElementById("leffaAPP");
+    // Make an AJAX request to the Finnkino Theatre Areas API
+    var theatreRequest = new XMLHttpRequest();
+    theatreRequest.open("GET", "https://www.finnkino.fi/xml/TheatreAreas/", true);
 
-    //hae teatterit
-    fetch("http://www.finnkino.fi/xml/TheatreAreas/")
-        .then(response => response.text())
-        .then(data => {
-            //XML -> json
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(data, "text/xml");
+    theatreRequest.onreadystatechange = function () {
+        if (theatreRequest.readyState == 4 && theatreRequest.status == 200) {
+            // Parse the XML response for Theatre Areas
+            var theatreAreas = theatreRequest.responseXML.querySelectorAll("TheatreArea");
 
-            const theaters = xmlDoc.querySelectorAll("TheatreArea");
-            
-            //luo valitsimet
-            const theaterSelect = document.createElement("select");
-            theaterSelect.setAttribute("id", "theaterSelect");
+            // Populate the theater selection dropdown
+            var teatteriValinta = document.getElementById("teatteriValinta");
+            teatteriValinta.innerHTML = "<option value=''>Select a theater</option>";
 
-            //lisää valitsimia
-            theaters.forEach(theater => {
-                const option = document.createElement("option");
-                option.value = theater.querySelector("ID").textContent;
-                option.text = theater.querySelector("Name").textContent;
-                theaterSelect.appendChild(option);
+            theatreAreas.forEach(function (theatre) {
+                var id = theatre.querySelector("ID").textContent;
+                var name = theatre.querySelector("Name").textContent;
+                var option = document.createElement("option");
+                option.value = id;
+                option.textContent = name;
+                teatteriValinta.appendChild(option);
             });
 
-            //hakunappula
-            const fetchMoviesButton = document.createElement("button");
-            fetchMoviesButton.textContent = "Fetch Movies";
-            fetchMoviesButton.addEventListener("click", fetchMovies);
+            // Set up event listener for theater selection
+            teatteriValinta.addEventListener("change", function () {
+                var selectedTheaterId = this.value;
+                if (selectedTheaterId) {
+                    // Fetch and display movie schedule for the selected theater
+                    fetchAndDisplayMovieSchedule(selectedTheaterId);
+                } else {
+                    // Clear the movie information when no theater is selected
+                    document.getElementById("leffaAPP").innerHTML = "";
+                }
+            });
 
-            leffaAppContainer.appendChild(theaterSelect);
-            leffaAppContainer.appendChild(fetchMoviesButton);
-        })
-        .catch(error => console.error("Error fetching theaters:", error));
+            var clearButton = document.getElementById("tyjennaLeffaApp");
+            clearButton.addEventListener("click", function () {
+                // Clear the movie information
+                clearMovieInformation();
+            });
+        
+            function clearMovieInformation() {
+                document.getElementById("leffaAPP").innerHTML = "";
+            }
 
-    //hae leffoja teatterista
-    function fetchMovies() {
-        const selectedTheaterId = document.getElementById("theaterSelect").value;
+        }
+    };
 
-        fetch(`http://www.finnkino.fi/xml/Schedule/?area=${selectedTheaterId}`)
-            .then(response => response.text())
-            .then(data => {
-                //XML -> json
-                const parser = new DOMParser();
-                const xmlDoc = parser.parseFromString(data, "text/xml");
+    theatreRequest.send();
 
-                //haetaan leffatiedot
-                const movies = xmlDoc.querySelectorAll("Show");
-                leffaAppContainer.innerHTML = "";
-                movies.forEach(movie => {
-                    const movieTitle = movie.querySelector("Title").textContent;
-                    const movieImage = movie.querySelector("Images Image[width='1014']").textContent;
+    function fetchAndDisplayMovieSchedule(theaterId) {
+        // Make an AJAX request to the Finnkino Schedule API for the selected theater
+        var scheduleRequest = new XMLHttpRequest();
+        scheduleRequest.open("GET", "https://www.finnkino.fi/xml/Schedule/?area=" + theaterId, true);
 
-                    //luodaan elementit leffojen tiedoille
-                    const movieDiv = document.createElement("div");
-                    const titleHeading = document.createElement("h2");
-                    const imageElement = document.createElement("img");
+        scheduleRequest.onreadystatechange = function () {
+            if (scheduleRequest.readyState == 4 && scheduleRequest.status == 200) {
+                // Parse the XML response for movie schedule
+                var shows = scheduleRequest.responseXML.querySelectorAll("Show");
 
-                    titleHeading.textContent = movieTitle;
-                    imageElement.src = movieImage;
+                // Clear previous movie information
+                document.getElementById("leffaAPP").innerHTML = "";
 
-                    movieDiv.appendChild(titleHeading);
-                    movieDiv.appendChild(imageElement);
-                    leffaAppContainer.appendChild(movieDiv);
+                // Display information for each ongoing movie
+                shows.forEach(function (show) {
+                    var title = show.querySelector("Title").textContent;
+                    var auditorium = show.querySelector("TheatreAuditorium").textContent;
+                    var showStart = show.querySelector("dttmShowStart").textContent;
+                    var showEnd = show.querySelector("dttmShowEnd").textContent;
+                    var imageUrl = show.querySelector("EventSmallImagePortrait").textContent;
+
+                    // Display movie information on the webpage
+                    var movieInfoDiv = document.createElement("div");
+                    movieInfoDiv.classList.add("movie-info");
+                    movieInfoDiv.innerHTML = `
+                        <img src="${imageUrl}" alt="${title}" class="movie-image">
+                        <p><strong>Title:</strong> ${title}</p>
+                        <p><strong>Auditorium:</strong> ${auditorium}</p>
+                        <p><strong>Show Start:</strong> ${showStart}</p>
+                        <p><strong>Show End:</strong> ${showEnd}</p>
+                        <hr>
+                    `;
+                    document.getElementById("leffaAPP").appendChild(movieInfoDiv);
                 });
-            })
-            .catch(error => console.error("Error fetching movies:", error));
+            }
+        };
+
+        scheduleRequest.send();
     }
 });
