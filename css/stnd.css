@@ -57,3 +57,15 @@
         margin-right: 10px;
     }
 }
+
+#topAlbums {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+#topAlbums > div {
+    flex: 1 1 200px;
+    margin: 10px;
+    text-align: center;
+}

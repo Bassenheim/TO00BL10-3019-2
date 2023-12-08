@@ -9,5 +9,10 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("leffaAPP").innerHTML = "";
         document.getElementById("musaAPP").innerHTML = "";
         document.getElementById("liikenneAPP").innerHTML = "";
+        document.getElementById("artistInfo").innerHTML = "";
+        document.getElementById("topAlbums").innerHTML = "";
+
+        document.getElementById("teatteriValinta").selectedIndex = 0;
+        document.getElementById("artistiValinta").selectedIndex = 0;
     }
 });
