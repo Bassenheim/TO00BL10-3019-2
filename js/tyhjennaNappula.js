@@ -14,5 +14,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         document.getElementById("teatteriValinta").selectedIndex = 0;
         document.getElementById("artistiValinta").selectedIndex = 0;
+        document.getElementById("asemaValinta").selectedIndex = 0;
     }
 });
