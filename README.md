@@ -1,2 +1,4 @@
 # TO00BL10-3019-2
-TO00BL10-3019 Project 2: AJAX
+Course TO00BL10-3019 project 2: AJAX
+
+By Samuel Klenberg
